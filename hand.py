@@ -18,6 +18,7 @@ class Hand:
         self.handRanks = list()
         self.handSuits = list()
 
+        #<playerHand> lists player's Cards in descending order
         for i in range(len(self.playerHand)):
             for k in range(i + 1, len(self.playerHand)):
                 if self.playerHand[i] < self.playerHand[k]:
@@ -99,28 +100,59 @@ class Hand:
 
         return ('straight', bestStraight)
     
+    def checkQuads(self):
+        for rank in self.handRanks:
+            if self.handRanks.count(rank) == 4:
+                return True
+        
+        return False
+    
     def getQuads(self):
-        highRank = self.handRanks[3]
+        highRank = INVERSE_RANK_ORDER[self.handRanks[3]]
+        copy = self.playerHand.copy()
+        bestQuads = list()
 
-        return ('quads', highRank)
+        i = 0
+        while i < len(copy):
+            if copy[i].rank == highRank:
+                bestQuads.append(copy.pop(i))
+                i = i -1
+
+            i = i + 1
+
+        bestQuads.append(copy.pop(0))
+        
+        return ('quads', bestQuads)
 
     def checkTrips(self):
-        for value in RANK_ORDER.values():
-            if self.handRanks.count(value) == 3:
+        for rank in self.handRanks:
+            if self.handRanks.count(rank) == 3:
                 return True
         
         return False
     
     def getTrips(self):
-        reverseRanks = self.handRanks[::-1]
-        highRank = 0
-        
-        for rank in reverseRanks:
-            if reverseRanks.count(rank) == 3:
-                highRank = rank
-                break
-        
-        return ('trips', highRank)
+        highRank = str()
+        bestTrips = list()
+        copy = self.playerHand.copy()
+
+        print(self.playerHand)
+        for i in range(len(self.playerHand) - 2):
+            if RANK_ORDER[self.playerHand[i].rank] - RANK_ORDER[self.playerHand[i + 2].rank] == 0:
+                highRank = self.playerHand[i].rank
+
+        i = 0
+        while i < len(copy):
+            if copy[i].rank == highRank:
+                bestTrips.append(copy.pop(i))
+                i = i - 1
+
+            i = i + 1
+
+        bestTrips.append(copy.pop(0))
+        bestTrips.append(copy.pop(0))
+
+        return ('trips', bestTrips)
 
     def checkPair(self):
         for value in RANK_ORDER.values():
@@ -186,8 +218,9 @@ class Hand:
             
         return False'''
 
-cards = [Card('A', '♣️'), Card('T', '♣️'), Card('J', '♣️'), Card('K', '♦️'), Card('3', '♦️'), Card('4', '♣️'), Card('Q', '♦️')]
+#testing
+cards = [Card('2', '♣️'), Card('2', '♣️'), Card('A', '♣️'), Card('2', '♦️'), Card('3', '♦️'), Card('5', '♣️'), Card('A', '♦️')]
 hand = Hand(cards)
-print(hand.playerHand)
-print(hand.getStraight())
+print(hand.handRanks)
+print(hand.getTrips())
 
