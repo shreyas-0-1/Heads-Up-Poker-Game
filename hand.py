@@ -66,9 +66,11 @@ class Hand:
                 
     
     def checkStraight(self):
+        if 14 in self.handRanks and 2 in self.handRanks and 3 in self.handRanks and 4 in self.handRanks and 5 in self.handRanks and not 6 in self.handRanks:
+            return True
+
         noCopies = self.handRanks.copy()
         noCopies = sorted(list(set(noCopies)))
-        print(noCopies)
 
         for i in range(0, len(noCopies)-4):
             temp = noCopies[i:i+5]
@@ -79,7 +81,18 @@ class Hand:
         return False
     
     def getStraight(self):
+        bestStraight = list()
         copy = self.playerHand.copy()
+
+        if 14 in self.handRanks and 2 in self.handRanks and 3 in self.handRanks and 4 in self.handRanks and 5 in self.handRanks and  6 not in self.handRanks:
+            indexA = self.handRanks.index(14)
+            index2 = self.handRanks.index(2)
+            index3 = self.handRanks.index(3)
+            index4 = self.handRanks.index(4)
+            index5 = self.handRanks.index(5)
+
+            bestStraight = [self.playerHand[index5], self.playerHand[index4], self.playerHand[index3], self.playerHand[index2], self.playerHand[indexA]]
+            return ('straight', bestStraight)
         
         i = 0
         while i < len(copy):
@@ -92,7 +105,6 @@ class Hand:
             
             i = i + 1
         
-        bestStraight = list()
         for j in range(len(copy) - 4):
             if RANK_ORDER[copy[j].rank] - RANK_ORDER[copy[j + 4].rank] == 4:
                 bestStraight = copy[j:j + 5]
@@ -255,9 +267,19 @@ class Hand:
     
     def checkSFlush(self):
         if self.checkFlush():
-            flush = self.getFlush()[1]
-            if RANK_ORDER[flush[0].rank] - RANK_ORDER[flush[4].rank] == 4:
+            flush = list()
+            suit = self.getFlush()[1][0].suit 
+
+            for card in self.playerHand:
+                if card.suit == suit:
+                    flush.append(card)
+
+            if Card('A', suit) in flush and Card('2', suit) in flush and Card('3', suit) in flush and Card('4', suit) in flush and Card('5', suit) in flush and Card('6', suit) not in flush:
                 return True
+
+            for i in range(len(flush) - 4):
+                if RANK_ORDER[flush[i].rank] - RANK_ORDER[flush[i + 4].rank] == 4:
+                    return True
         
         return False
 
@@ -268,6 +290,12 @@ class Hand:
         for card in self.playerHand:
             if card.suit == suit:
                 bestSFlush.append(card)
+
+        if Card('A', suit) in bestSFlush and Card('2', suit) in bestSFlush and Card('3', suit) in bestSFlush and Card('4', suit) in bestSFlush and Card('5', suit) in bestSFlush and Card('6', suit) not in bestSFlush:
+                length = len(bestSFlush)
+                copy = bestSFlush.copy()
+                bestSFlush = [copy[length - 4], copy[length - 3], copy[length - 2], copy[length - 1], copy[0]]
+                return ('straight flush', bestSFlush)
 
         for i in range(len(bestSFlush)-4):
             if RANK_ORDER[bestSFlush[i].rank] - RANK_ORDER[bestSFlush[i + 4].rank] == 4:
@@ -294,6 +322,6 @@ class Hand:
         pass
 
 #testing
-cards = [Card('2', '♦️'), Card('Q', '♥️'), Card('Q', '♣️'), Card('J', '♠️'), Card('3', '♦️'), Card('4', '♣️'), Card('J', '♥️')]
+cards = [Card('2', '♦️'), Card('3', '♣️'), Card('4', '♦️'), Card('5', '♦️'), Card('8', '♦️'), Card('7', '♣️'), Card('A', '♦️')]
 hand = Hand(cards)
-print(hand.playerHand)
+print(hand.getStraight())
