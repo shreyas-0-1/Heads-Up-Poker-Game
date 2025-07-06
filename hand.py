@@ -186,16 +186,72 @@ class Hand:
         return ('pair', bestPair)
     
     def check2Pair(self):
-        pass
+        ranksAppearTwice = list()
+
+        for rank in self.handRanks:
+            if self.handRanks.count(rank) == 2 and rank not in ranksAppearTwice:
+                ranksAppearTwice.append(rank)
+
+        if len(ranksAppearTwice) > 1: return True
+
+        return False
     
     def get2Pair(self):
-        pass
+        copy = self.playerHand.copy()
+        best2Pair = list()
+
+        pair = self.getPair()[1][0:2]
+        
+        for card in pair:
+            best2Pair.append(card)
+            copy.remove(card)
+
+        for i in range(len(copy) - 1):
+            if RANK_ORDER[copy[i].rank] - RANK_ORDER[copy[i + 1].rank] == 0:
+                best2Pair.append(copy[i])
+                best2Pair.append(copy[i + 1])
+                break
+        
+        best2Pair.append(copy[0])
+
+        return ('two pair', best2Pair)
 
     def checkBoat(self):
-        pass
+        copy = self.handRanks
+        ranksAppearThrice = list()
+        ranksAppearTwice = list()
+
+        for rank in copy:
+            if copy.count(rank) >= 3 and rank not in ranksAppearThrice:
+                ranksAppearThrice.append(rank)
+
+        if len(ranksAppearThrice) > 1: return True
+        
+        for rank in copy:
+            if copy.count(rank) >= 2 and rank not in ranksAppearThrice and rank not in ranksAppearTwice:
+                ranksAppearTwice.append(rank)
+
+        if len(ranksAppearThrice) == 1 and len(ranksAppearTwice) >= 1: return True
+
+        return False
     
     def getBoat(self):
-        pass
+        copy = self.playerHand.copy()
+        bestBoat = list()
+
+        trips = self.getTrips()[1][0:3]
+        
+        for card in trips:
+            bestBoat.append(card)
+            copy.remove(card)
+
+        for i in range(len(copy) - 1):
+            if RANK_ORDER[copy[i].rank] - RANK_ORDER[copy[i + 1].rank] == 0:
+                bestBoat.append(copy[i])
+                bestBoat.append(copy[i + 1])
+                break
+        
+        return ('full house', bestBoat)
     
     def checkSFlush(self):
         if self.checkFlush():
@@ -220,16 +276,24 @@ class Hand:
         
         return ('straight flush', bestSFlush)
 
-
     def checkRFlush(self):
-        pass
+        if self.checkSFlush():
+            SFlush = self.getSFlush()[1]
+
+            if SFlush[0].rank == 'A':
+                return True
+            
+        return False
 
     def getRFlush(self):
+        RFlush = self.getSFlush()[1]
+
+        return ('royal flush', RFlush)
+    
+    def evaluate(self):
         pass
 
 #testing
-cards = [Card('7', '♦️'), Card('6', '♦️'), Card('T', '♣️'), Card('2', '♦️'), Card('3', '♦️'), Card('A', '♦️'), Card('4', '♦️')]
+cards = [Card('2', '♦️'), Card('Q', '♥️'), Card('Q', '♣️'), Card('J', '♠️'), Card('3', '♦️'), Card('4', '♣️'), Card('J', '♥️')]
 hand = Hand(cards)
 print(hand.playerHand)
-print(hand.checkSFlush())
-
