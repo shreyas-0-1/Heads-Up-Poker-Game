@@ -136,10 +136,10 @@ class Hand:
         bestTrips = list()
         copy = self.playerHand.copy()
 
-        print(self.playerHand)
         for i in range(len(self.playerHand) - 2):
             if RANK_ORDER[self.playerHand[i].rank] - RANK_ORDER[self.playerHand[i + 2].rank] == 0:
                 highRank = self.playerHand[i].rank
+                break
 
         i = 0
         while i < len(copy):
@@ -155,72 +155,81 @@ class Hand:
         return ('trips', bestTrips)
 
     def checkPair(self):
-        for value in RANK_ORDER.values():
-            if self.handRanks.count(value) == 2:
+        for rank in self.handRanks:
+            if self.handRanks.count(rank) == 2:
                 return True
         
         return False
     
     def getPair(self):
-        reverseRanks = self.handRanks[::-1]
-        highRank = 0
-        
-        for rank in reverseRanks:
-            if reverseRanks.count(rank) == 2:
-                highRank = rank
+        highRank = str()
+        bestPair = list()
+        copy = self.playerHand.copy()
+
+        for i in range(len(self.playerHand) - 1):
+            if RANK_ORDER[self.playerHand[i].rank] - RANK_ORDER[self.playerHand[i + 1].rank] == 0:
+                highRank = self.playerHand[i].rank
                 break
-        
-        return ('pair', highRank)
+
+        i = 0
+        while i < len(copy):
+            if copy[i].rank == highRank:
+                bestPair.append(copy.pop(i))
+                i = i - 1
+
+            i = i + 1
+
+        bestPair.append(copy.pop(0))
+        bestPair.append(copy.pop(0))
+        bestPair.append(copy.pop(0))
+
+        return ('pair', bestPair)
     
     def check2Pair(self):
-        if self.checkPair():
-            firstPair = self.getPair()[1]
-            temp = self.handRanks.copy()
-
-            while firstPair in temp:
-                temp.remove(firstPair)
-
-            for value in RANK_ORDER.values():
-                if temp.count(value) == 2:
-                    return True
-        
-        return False
+        pass
     
     def get2Pair(self):
-        temp = self.getPair()
-        highRank = temp[1]
-
-        return ('2 pair', highRank)
+        pass
 
     def checkBoat(self):
-        if self.checkTrips():
-            trips = self.getTrips()[1]
-            temp = self.handRanks.copy()
-
-            while trips in temp:
-                temp.remove(trips)
-
-            for value in RANK_ORDER.values():
-                if temp.count(value) == 2:
-                    return True
-        
-        return False
+        pass
     
     def getBoat(self):
-        temp = self.getTrips()
-        highRank = temp[1]
-
-        return ('full house', highRank)
+        pass
     
-    '''def checkSFlush(self):
-        if self.checkFlush() and self.checkStraight():
-            highStraight = self.getStraight()[1]
-            
-        return False'''
+    def checkSFlush(self):
+        if self.checkFlush():
+            flush = self.getFlush()[1]
+            if RANK_ORDER[flush[0].rank] - RANK_ORDER[flush[4].rank] == 4:
+                return True
+        
+        return False
+
+    def getSFlush(self):
+        suit = self.getFlush()[1][0].suit
+        bestSFlush = list()
+
+        for card in self.playerHand:
+            if card.suit == suit:
+                bestSFlush.append(card)
+
+        for i in range(len(bestSFlush)-4):
+            if RANK_ORDER[bestSFlush[i].rank] - RANK_ORDER[bestSFlush[i + 4].rank] == 4:
+                bestSFlush = bestSFlush[i:i + 5]
+                break
+        
+        return ('straight flush', bestSFlush)
+
+
+    def checkRFlush(self):
+        pass
+
+    def getRFlush(self):
+        pass
 
 #testing
-cards = [Card('2', '♣️'), Card('2', '♣️'), Card('A', '♣️'), Card('2', '♦️'), Card('3', '♦️'), Card('5', '♣️'), Card('A', '♦️')]
+cards = [Card('7', '♦️'), Card('6', '♦️'), Card('T', '♣️'), Card('2', '♦️'), Card('3', '♦️'), Card('A', '♦️'), Card('4', '♦️')]
 hand = Hand(cards)
-print(hand.handRanks)
-print(hand.getTrips())
+print(hand.playerHand)
+print(hand.checkSFlush())
 
