@@ -40,6 +40,12 @@ class Hand:
         for i in range(0, len(self.handSuits)):
             self.handSuits[i] = INVERSE_SUIT_ORDER[self.handSuits[i]]
 
+    def getHighCard(self):
+        copy = self.playerHand.copy()
+        bestHighCard = copy[0:5]
+
+        return ('high card', bestHighCard)
+
     def checkFlush(self):
         if self.handSuits.count('♣️') >= 5 or self.handSuits.count('♠️') >= 5 or self.handSuits.count('♥️') >= 5 or self.handSuits.count('♦️') >= 5:
             return True
@@ -47,23 +53,25 @@ class Hand:
         return False
     
     def getFlush(self):
-        suit = self.handSuits[3]
-        bestFlush = list()
+        if self.checkFlush():
+            suit = self.handSuits[3]
+            bestFlush = list()
 
-        for card in self.playerHand:
-            if card.suit == suit:
-                bestFlush.append(card)
+            for card in self.playerHand:
+                if card.suit == suit:
+                    bestFlush.append(card)
 
-        for i in range(len(bestFlush)):
-            for k in range(i + 1, len(bestFlush)):
-                if bestFlush[i] < bestFlush[k]:
-                    bestFlush[i], bestFlush[k] = bestFlush[k], bestFlush[i]
+            for i in range(len(bestFlush)):
+                for k in range(i + 1, len(bestFlush)):
+                    if bestFlush[i] < bestFlush[k]:
+                        bestFlush[i], bestFlush[k] = bestFlush[k], bestFlush[i]
 
-        while len(bestFlush) > 5:
-            bestFlush.pop(len(bestFlush) - 1)
+            while len(bestFlush) > 5:
+                bestFlush.pop(len(bestFlush) - 1)
+            
+            return ('flush', bestFlush)
         
-        return ('flush', bestFlush)
-                
+        return None      
     
     def checkStraight(self):
         if 14 in self.handRanks and 2 in self.handRanks and 3 in self.handRanks and 4 in self.handRanks and 5 in self.handRanks and not 6 in self.handRanks:
@@ -81,36 +89,39 @@ class Hand:
         return False
     
     def getStraight(self):
-        bestStraight = list()
-        copy = self.playerHand.copy()
+        if self.checkStraight():
+            bestStraight = list()
+            copy = self.playerHand.copy()
 
-        if 14 in self.handRanks and 2 in self.handRanks and 3 in self.handRanks and 4 in self.handRanks and 5 in self.handRanks and  6 not in self.handRanks:
-            indexA = self.handRanks.index(14)
-            index2 = self.handRanks.index(2)
-            index3 = self.handRanks.index(3)
-            index4 = self.handRanks.index(4)
-            index5 = self.handRanks.index(5)
+            if 14 in self.handRanks and 2 in self.handRanks and 3 in self.handRanks and 4 in self.handRanks and 5 in self.handRanks and  6 not in self.handRanks:
+                indexA = self.handRanks.index(14)
+                index2 = self.handRanks.index(2)
+                index3 = self.handRanks.index(3)
+                index4 = self.handRanks.index(4)
+                index5 = self.handRanks.index(5)
 
-            bestStraight = [self.playerHand[index5], self.playerHand[index4], self.playerHand[index3], self.playerHand[index2], self.playerHand[indexA]]
+                bestStraight = [self.playerHand[index5], self.playerHand[index4], self.playerHand[index3], self.playerHand[index2], self.playerHand[indexA]]
+                return ('straight', bestStraight)
+            
+            i = 0
+            while i < len(copy):
+                k = i + 1
+                while k < len(copy):
+                    if copy[i].rank == copy[k].rank:
+                        copy.pop(k)
+                        k = k - 1
+                    k = k + 1
+                
+                i = i + 1
+            
+            for j in range(len(copy) - 4):
+                if RANK_ORDER[copy[j].rank] - RANK_ORDER[copy[j + 4].rank] == 4:
+                    bestStraight = copy[j:j + 5]
+                    break
+
             return ('straight', bestStraight)
         
-        i = 0
-        while i < len(copy):
-            k = i + 1
-            while k < len(copy):
-                if copy[i].rank == copy[k].rank:
-                    copy.pop(k)
-                    k = k - 1
-                k = k + 1
-            
-            i = i + 1
-        
-        for j in range(len(copy) - 4):
-            if RANK_ORDER[copy[j].rank] - RANK_ORDER[copy[j + 4].rank] == 4:
-                bestStraight = copy[j:j + 5]
-                break
-
-        return ('straight', bestStraight)
+        return None
     
     def checkQuads(self):
         for rank in self.handRanks:
@@ -120,21 +131,24 @@ class Hand:
         return False
     
     def getQuads(self):
-        highRank = INVERSE_RANK_ORDER[self.handRanks[3]]
-        copy = self.playerHand.copy()
-        bestQuads = list()
+        if self.checkQuads():
+            highRank = INVERSE_RANK_ORDER[self.handRanks[3]]
+            copy = self.playerHand.copy()
+            bestQuads = list()
 
-        i = 0
-        while i < len(copy):
-            if copy[i].rank == highRank:
-                bestQuads.append(copy.pop(i))
-                i = i -1
+            i = 0
+            while i < len(copy):
+                if copy[i].rank == highRank:
+                    bestQuads.append(copy.pop(i))
+                    i = i -1
 
-            i = i + 1
+                i = i + 1
 
-        bestQuads.append(copy.pop(0))
+            bestQuads.append(copy.pop(0))
+            
+            return ('quads', bestQuads)
         
-        return ('quads', bestQuads)
+        return None
 
     def checkTrips(self):
         for rank in self.handRanks:
@@ -144,27 +158,30 @@ class Hand:
         return False
     
     def getTrips(self):
-        highRank = str()
-        bestTrips = list()
-        copy = self.playerHand.copy()
+        if self.checkTrips():
+            highRank = str()
+            bestTrips = list()
+            copy = self.playerHand.copy()
 
-        for i in range(len(self.playerHand) - 2):
-            if RANK_ORDER[self.playerHand[i].rank] - RANK_ORDER[self.playerHand[i + 2].rank] == 0:
-                highRank = self.playerHand[i].rank
-                break
+            for i in range(len(self.playerHand) - 2):
+                if RANK_ORDER[self.playerHand[i].rank] - RANK_ORDER[self.playerHand[i + 2].rank] == 0:
+                    highRank = self.playerHand[i].rank
+                    break
 
-        i = 0
-        while i < len(copy):
-            if copy[i].rank == highRank:
-                bestTrips.append(copy.pop(i))
-                i = i - 1
+            i = 0
+            while i < len(copy):
+                if copy[i].rank == highRank:
+                    bestTrips.append(copy.pop(i))
+                    i = i - 1
 
-            i = i + 1
+                i = i + 1
 
-        bestTrips.append(copy.pop(0))
-        bestTrips.append(copy.pop(0))
+            bestTrips.append(copy.pop(0))
+            bestTrips.append(copy.pop(0))
 
-        return ('trips', bestTrips)
+            return ('trips', bestTrips)
+        
+        return None
 
     def checkPair(self):
         for rank in self.handRanks:
@@ -174,28 +191,31 @@ class Hand:
         return False
     
     def getPair(self):
-        highRank = str()
-        bestPair = list()
-        copy = self.playerHand.copy()
+        if self.checkPair():
+            highRank = str()
+            bestPair = list()
+            copy = self.playerHand.copy()
 
-        for i in range(len(self.playerHand) - 1):
-            if RANK_ORDER[self.playerHand[i].rank] - RANK_ORDER[self.playerHand[i + 1].rank] == 0:
-                highRank = self.playerHand[i].rank
-                break
+            for i in range(len(self.playerHand) - 1):
+                if RANK_ORDER[self.playerHand[i].rank] - RANK_ORDER[self.playerHand[i + 1].rank] == 0:
+                    highRank = self.playerHand[i].rank
+                    break
 
-        i = 0
-        while i < len(copy):
-            if copy[i].rank == highRank:
-                bestPair.append(copy.pop(i))
-                i = i - 1
+            i = 0
+            while i < len(copy):
+                if copy[i].rank == highRank:
+                    bestPair.append(copy.pop(i))
+                    i = i - 1
 
-            i = i + 1
+                i = i + 1
 
-        bestPair.append(copy.pop(0))
-        bestPair.append(copy.pop(0))
-        bestPair.append(copy.pop(0))
+            bestPair.append(copy.pop(0))
+            bestPair.append(copy.pop(0))
+            bestPair.append(copy.pop(0))
 
-        return ('pair', bestPair)
+            return ('pair', bestPair)
+        
+        return None
     
     def check2Pair(self):
         ranksAppearTwice = list()
@@ -209,24 +229,27 @@ class Hand:
         return False
     
     def get2Pair(self):
-        copy = self.playerHand.copy()
-        best2Pair = list()
+        if self.check2Pair():
+            copy = self.playerHand.copy()
+            best2Pair = list()
 
-        pair = self.getPair()[1][0:2]
+            pair = self.getPair()[1][0:2]
+            
+            for card in pair:
+                best2Pair.append(card)
+                copy.remove(card)
+
+            for i in range(len(copy) - 1):
+                if RANK_ORDER[copy[i].rank] - RANK_ORDER[copy[i + 1].rank] == 0:
+                    best2Pair.append(copy[i])
+                    best2Pair.append(copy[i + 1])
+                    break
+            
+            best2Pair.append(copy[0])
+
+            return ('two pair', best2Pair)
         
-        for card in pair:
-            best2Pair.append(card)
-            copy.remove(card)
-
-        for i in range(len(copy) - 1):
-            if RANK_ORDER[copy[i].rank] - RANK_ORDER[copy[i + 1].rank] == 0:
-                best2Pair.append(copy[i])
-                best2Pair.append(copy[i + 1])
-                break
-        
-        best2Pair.append(copy[0])
-
-        return ('two pair', best2Pair)
+        return None
 
     def checkBoat(self):
         copy = self.handRanks
@@ -248,22 +271,25 @@ class Hand:
         return False
     
     def getBoat(self):
-        copy = self.playerHand.copy()
-        bestBoat = list()
+        if self.checkBoat():
+            copy = self.playerHand.copy()
+            bestBoat = list()
 
-        trips = self.getTrips()[1][0:3]
-        
-        for card in trips:
-            bestBoat.append(card)
-            copy.remove(card)
+            trips = self.getTrips()[1][0:3]
+            
+            for card in trips:
+                bestBoat.append(card)
+                copy.remove(card)
 
-        for i in range(len(copy) - 1):
-            if RANK_ORDER[copy[i].rank] - RANK_ORDER[copy[i + 1].rank] == 0:
-                bestBoat.append(copy[i])
-                bestBoat.append(copy[i + 1])
-                break
+            for i in range(len(copy) - 1):
+                if RANK_ORDER[copy[i].rank] - RANK_ORDER[copy[i + 1].rank] == 0:
+                    bestBoat.append(copy[i])
+                    bestBoat.append(copy[i + 1])
+                    break
+            
+            return ('full house', bestBoat)
         
-        return ('full house', bestBoat)
+        return None
     
     def checkSFlush(self):
         if self.checkFlush():
@@ -284,25 +310,28 @@ class Hand:
         return False
 
     def getSFlush(self):
-        suit = self.getFlush()[1][0].suit
-        bestSFlush = list()
+        if self.checkSFlush():
+            suit = self.getFlush()[1][0].suit
+            bestSFlush = list()
 
-        for card in self.playerHand:
-            if card.suit == suit:
-                bestSFlush.append(card)
+            for card in self.playerHand:
+                if card.suit == suit:
+                    bestSFlush.append(card)
 
-        if Card('A', suit) in bestSFlush and Card('2', suit) in bestSFlush and Card('3', suit) in bestSFlush and Card('4', suit) in bestSFlush and Card('5', suit) in bestSFlush and Card('6', suit) not in bestSFlush:
-                length = len(bestSFlush)
-                copy = bestSFlush.copy()
-                bestSFlush = [copy[length - 4], copy[length - 3], copy[length - 2], copy[length - 1], copy[0]]
-                return ('straight flush', bestSFlush)
+            if Card('A', suit) in bestSFlush and Card('2', suit) in bestSFlush and Card('3', suit) in bestSFlush and Card('4', suit) in bestSFlush and Card('5', suit) in bestSFlush and Card('6', suit) not in bestSFlush:
+                    length = len(bestSFlush)
+                    copy = bestSFlush.copy()
+                    bestSFlush = [copy[length - 4], copy[length - 3], copy[length - 2], copy[length - 1], copy[0]]
+                    return ('straight flush', bestSFlush)
 
-        for i in range(len(bestSFlush)-4):
-            if RANK_ORDER[bestSFlush[i].rank] - RANK_ORDER[bestSFlush[i + 4].rank] == 4:
-                bestSFlush = bestSFlush[i:i + 5]
-                break
+            for i in range(len(bestSFlush)-4):
+                if RANK_ORDER[bestSFlush[i].rank] - RANK_ORDER[bestSFlush[i + 4].rank] == 4:
+                    bestSFlush = bestSFlush[i:i + 5]
+                    break
+            
+            return ('straight flush', bestSFlush)
         
-        return ('straight flush', bestSFlush)
+        return None
 
     def checkRFlush(self):
         if self.checkSFlush():
@@ -314,14 +343,29 @@ class Hand:
         return False
 
     def getRFlush(self):
-        RFlush = self.getSFlush()[1]
+        if self.checkRFlush():
+            RFlush = self.getSFlush()[1]
 
-        return ('royal flush', RFlush)
+            return ('royal flush', RFlush)
+        
+        return None
     
     def evaluate(self):
-        pass
+        ladder = (
+            self.getRFlush(),
+            self.getSFlush(),
+            self.getQuads(),
+            self.getBoat(),
+            self.getFlush(),
+            self.getStraight(),
+            self.getTrips(),
+            self.get2Pair(),
+            self.getPair(),
+            self.getHighCard()
+        )
 
-#testing
-cards = [Card('2', '♦️'), Card('3', '♣️'), Card('4', '♦️'), Card('5', '♦️'), Card('8', '♦️'), Card('7', '♣️'), Card('A', '♦️')]
-hand = Hand(cards)
-print(hand.getStraight())
+        for hand in ladder:
+            if hand is not None:
+                return hand
+        
+        return None 

@@ -19,7 +19,6 @@ class Deck:
             temp = temp + f"{card}, "
 
         print(temp[:-2])
-            
 
     def shuffle(self):
         rand.shuffle(self.deck)
