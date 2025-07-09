@@ -15,6 +15,7 @@ class Deck:
 
     def shuffle(self):
         rand.shuffle(CARDS_LIST)
+        self.cards.clear()
 
         for card in CARDS_LIST:
             self.cards[card] = 1
